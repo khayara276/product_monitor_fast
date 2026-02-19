@@ -1,0 +1,46 @@
+name: Shein Monitor 🚀
+
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: "0 */6 * * *"  # Har 6 ghante mein restart (00:00, 06:00, 12:00, 18:00 UTC)
+  workflow_dispatch:        # Manual button to start
+
+# 🔥 Concurrency Logic:
+# Agar naya run start hota hai, to purana wala automatically stop (cancel) ho jayega.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  run-monitor:
+    runs-on: ubuntu-latest
+    # 🛑 Timeout set to 350 mins (5 Hours 50 Minutes)
+    # Iske baad ye khud band ho jayega taaki agla schedule fresh start ho sake.
+    timeout-minutes: 350    
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install Chrome
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable
+
+    - name: Install Dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Run Monitor
+      env:
+        TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+        CHAT_ID: ${{ secrets.CHAT_ID }}
+        COOKIES_JSON: ${{ secrets.COOKIES_JSON }}
+      run: |
+        python db_stock_monitor.py
