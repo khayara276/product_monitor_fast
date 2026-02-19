@@ -1,5 +1,4 @@
 DrissionPage==4.0.4.22
 requests
-flask
-urllib3
 curl_cffi==0.7.0b4
+urllib3
